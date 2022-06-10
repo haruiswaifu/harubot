@@ -172,7 +172,7 @@ func (c *Cache) fetchGlobalEmotes() {
 		log.Errorf("failed to create twitch client: %s", err)
 	}
 	for _, channelId := range c.channelIds {
-		if subscriptionTier := tc.checkSub(channelId, SelfUserId); subscriptionTier != SubscriptionTier_NoSubscription {
+		if subscriptionTier := checkSub(channelId, SelfUserId); subscriptionTier != SubscriptionTier_NoSubscription {
 			emotes, err := tc.getChannelEmotes(channelId)
 			if err != nil {
 				log.Errorf("failed to get twitch emotes for channel %s: %s", channelId, err)

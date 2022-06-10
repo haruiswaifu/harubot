@@ -39,7 +39,12 @@ const (
 	SubscriptionTier_3
 )
 
-func (t *twitchClient) checkSub(broadcasterId, userId string) int {
+func checkSub(broadcasterId, userId string) int {
+	t, err := newTwitchClient()
+	if err != nil {
+		log.Errorf("failed to create twitch client: %s", err)
+		return SubscriptionTier_NoSubscription
+	}
 	resp, err := t.helix.CheckUserSubscription(&helix.UserSubscriptionsParams{
 		BroadcasterID: broadcasterId,
 		UserID:        userId,
