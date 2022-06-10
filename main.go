@@ -31,6 +31,7 @@ type environmentVariables struct {
 	Channels                         []string `json:"channels"`
 	SelfUsername                     string   `json:"self-username"`
 	SelfDisplayname                  string   `json:"self-displayname"`
+	SelfUserId                       string   `json:"self-user-id"`
 	EmoteCacheRefreshIntervalMinutes int      `json:"emote-cache-refresh-interval-minutes"`
 	Colors                           []string `json:"colors"`
 	PersonalMessageQueueCapacity     int      `json:"personal-message-queue-capacity"`
@@ -59,7 +60,7 @@ type state struct {
 }
 
 func newState(s *Secrets, envVars *environmentVariables) *state {
-	emoteCache := emotes.NewCache(envVars.Channels)
+	emoteCache := emotes.NewCache(envVars.Channels, envVars.SelfUserId)
 	go emoteCache.RoutinelyRefreshCache(envVars.EmoteCacheRefreshIntervalMinutes)
 
 	client := twitchIrc.NewClient(s.Username, s.OauthKey)

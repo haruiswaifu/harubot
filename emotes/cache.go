@@ -13,18 +13,15 @@ import (
 	"time"
 )
 
-const (
-	SelfUserId = "488987844"
-)
-
 type Cache struct {
 	emotesByChannel map[string]map[string]bool // cached
 	globalEmotes    map[string]bool            // cached
 	channelIds      map[string]string          // cached
 	channels        []string                   // passed in
+	selfUserId      string                     // passed in
 }
 
-func NewCache(channels []string) *Cache {
+func NewCache(channels []string, selfUserId string) *Cache {
 	ebc := map[string]map[string]bool{}
 	for _, channel := range channels {
 		ebc[channel] = map[string]bool{}
@@ -34,6 +31,7 @@ func NewCache(channels []string) *Cache {
 		emotesByChannel: ebc,
 		globalEmotes:    map[string]bool{},
 		channelIds:      map[string]string{},
+		selfUserId:      selfUserId,
 	}
 	newCache.fetchChannelIDs(channels)
 	return newCache
@@ -172,7 +170,7 @@ func (c *Cache) fetchGlobalEmotes() {
 		log.Errorf("failed to create twitch client: %s", err)
 	}
 	for _, channelId := range c.channelIds {
-		if subscriptionTier := checkSub(channelId, SelfUserId); subscriptionTier != SubscriptionTier_NoSubscription {
+		if subscriptionTier := checkSub(channelId, c.selfUserId); subscriptionTier != SubscriptionTier_NoSubscription {
 			emotes, err := tc.getChannelEmotes(channelId)
 			if err != nil {
 				log.Errorf("failed to get twitch emotes for channel %s: %s", channelId, err)
