@@ -210,8 +210,9 @@ func (state *state) doesNotMentionOthers(m twitchIrc.PrivateMessage, usersInChan
 	if len(usersInChannel) == 0 {
 		return false
 	}
+
 	for _, userInChannel := range usersInChannel {
-		if strings.ToLower(userInChannel) == state.selfUsername || strings.ToLower(userInChannel) == state.selfDisplayname {
+		if strings.ToLower(userInChannel) == state.selfUsername {
 			continue
 		}
 		if strings.Contains(strings.ToLower(m.Message), strings.ToLower(userInChannel)) {
@@ -226,7 +227,7 @@ func (state *state) autoReply(m twitchIrc.PrivateMessage) {
 	lastReplyTime, lastReplyTimeFound := state.autoReplyTimes[m.User.Name]
 
 	containsMyName := strings.Contains(strings.ToLower(m.Message), state.selfUsername) ||
-		strings.Contains(strings.ToLower(m.Message), state.selfDisplayname)
+		state.selfDisplayname != "" && strings.Contains(strings.ToLower(m.Message), state.selfDisplayname)
 	isFromMe := strings.ToLower(m.User.Name) == state.selfUsername
 	isNotOnCooldown := !lastReplyTimeFound || time.Since(lastReplyTime) > cooldown
 	isFromMod, _ := m.User.Badges["moderator"]
