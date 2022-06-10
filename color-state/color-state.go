@@ -3,7 +3,7 @@ package color_state
 import (
 	"fmt"
 	twitchIrc "github.com/gempir/go-twitch-irc/v2"
-	personalMessageQueue "jinnybot/personal-message-queue"
+	personalMessageQueue "harubot/personal-message-queue"
 	"time"
 )
 

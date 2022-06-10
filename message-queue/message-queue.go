@@ -3,7 +3,7 @@ package messageQueue
 import (
 	"errors"
 	twitchIrc "github.com/gempir/go-twitch-irc/v2"
-	"jinnybot/emotes"
+	"harubot/emotes"
 	"sort"
 	"strings"
 	"sync"

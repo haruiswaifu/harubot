@@ -1,9 +1,8 @@
-module jinnybot
+module harubot
 
 go 1.18
 
 require (
-	github.com/PullRequestInc/go-gpt3 v1.1.6
 	github.com/forPelevin/gomoji v1.1.4
 	github.com/gempir/go-twitch-irc/v2 v2.8.1
 	github.com/nicklaw5/helix/v2 v2.4.0
