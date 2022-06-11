@@ -1,4 +1,4 @@
-package personal_message_queue
+package personalmessagequeue
 
 import (
 	log "github.com/sirupsen/logrus"

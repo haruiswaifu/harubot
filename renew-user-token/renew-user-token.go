@@ -1,4 +1,4 @@
-package renew_user_token
+package renewusertoken
 
 import (
 	"encoding/json"

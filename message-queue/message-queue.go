@@ -1,8 +1,8 @@
-package messageQueue
+package messagequeue
 
 import (
 	"errors"
-	twitchIrc "github.com/gempir/go-twitch-irc/v2"
+	twitchirc "github.com/gempir/go-twitch-irc/v2"
 	"harubot/emotes"
 	"sort"
 	"strings"
@@ -18,14 +18,14 @@ func (mq *MessageQueue) Unlock() {
 }
 
 type MessageQueue struct {
-	queue       []twitchIrc.PrivateMessage
+	queue       []twitchirc.PrivateMessage
 	lastMessage string
 	lock        sync.Mutex
 }
 
 func NewMessageQueue() *MessageQueue {
 	return &MessageQueue{
-		queue:       []twitchIrc.PrivateMessage{},
+		queue:       []twitchirc.PrivateMessage{},
 		lastMessage: "",
 		lock:        sync.Mutex{},
 	}
@@ -52,7 +52,7 @@ var thresholds = map[string][]float32{
 var defaultThresholds = []float32{10, 8, 7}
 
 // pushes new element to end of queue
-func (mq *MessageQueue) Push(m twitchIrc.PrivateMessage) {
+func (mq *MessageQueue) Push(m twitchirc.PrivateMessage) {
 	wordSplit := strings.Split(m.Message, " ")
 	for _, w := range wordSplit {
 		if strings.HasPrefix(w, "@") && len(w) > 2 {
@@ -76,7 +76,7 @@ func (mq *MessageQueue) length() int {
 }
 
 func (mq *MessageQueue) Clear() {
-	mq.queue = []twitchIrc.PrivateMessage{}
+	mq.queue = []twitchirc.PrivateMessage{}
 }
 
 // Velocity calculates the amount of messages per second of the messages in the queue

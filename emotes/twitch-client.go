@@ -2,7 +2,7 @@ package emotes
 
 import (
 	"fmt"
-	helix "github.com/nicklaw5/helix/v2"
+	"github.com/nicklaw5/helix/v2"
 	log "github.com/sirupsen/logrus"
 )
 

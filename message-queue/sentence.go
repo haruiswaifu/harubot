@@ -1,4 +1,4 @@
-package messageQueue
+package messagequeue
 
 import (
 	"strings"

@@ -1,9 +1,9 @@
-package color_state
+package colorstate
 
 import (
 	"fmt"
-	twitchIrc "github.com/gempir/go-twitch-irc/v2"
-	personalMessageQueue "harubot/personal-message-queue"
+	twitchirc "github.com/gempir/go-twitch-irc/v2"
+	personalmessagequeue "harubot/personal-message-queue"
 	"time"
 )
 
@@ -49,7 +49,7 @@ func (c *ColorState) changeColor() {
 	c.colorIndex = next
 }
 
-func (c *ColorState) RoutinelyChangeColor(client *twitchIrc.Client, selfUsername string, pmq *personalMessageQueue.PersonalMessageQueue) {
+func (c *ColorState) RoutinelyChangeColor(client *twitchirc.Client, selfUsername string, pmq *personalmessagequeue.PersonalMessageQueue) {
 	for {
 		time.Sleep(10 * time.Second)
 		c.changeColor()

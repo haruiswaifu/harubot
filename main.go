@@ -3,13 +3,13 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	twitchIrc "github.com/gempir/go-twitch-irc/v2"
+	twitchirc "github.com/gempir/go-twitch-irc/v2"
 	log "github.com/sirupsen/logrus"
-	colorState "harubot/color-state"
+	colorstate "harubot/color-state"
 	"harubot/emotes"
-	messageQueue "harubot/message-queue"
-	personalMessageQueue "harubot/personal-message-queue"
-	renewUserToken "harubot/renew-user-token"
+	messagequeue "harubot/message-queue"
+	personalmessagequeue "harubot/personal-message-queue"
+	renewusertoken "harubot/renew-user-token"
 	"io/ioutil"
 	"math/rand"
 	"strconv"
@@ -38,7 +38,7 @@ type environmentVariables struct {
 	TokenRefreshIntervalHours        int      `json:"token-refresh-interval-hours"`
 }
 
-func joinChannels(client *twitchIrc.Client, channels []string) {
+func joinChannels(client *twitchirc.Client, channels []string) {
 	for _, c := range channels {
 		client.Join(c)
 		log.Printf("joined channel #%s", c)
@@ -47,11 +47,11 @@ func joinChannels(client *twitchIrc.Client, channels []string) {
 }
 
 type state struct {
-	messageQueuesByChannel map[string]*messageQueue.MessageQueue
-	personalMessageQueue   *personalMessageQueue.PersonalMessageQueue
-	client                 *twitchIrc.Client
+	messageQueuesByChannel map[string]*messagequeue.MessageQueue
+	personalMessageQueue   *personalmessagequeue.PersonalMessageQueue
+	client                 *twitchirc.Client
 	emoteCache             *emotes.Cache
-	colorState             *colorState.ColorState
+	colorState             *colorstate.ColorState
 	autoReplyTimes         map[string]time.Time
 	minimumChatVelocity    float64
 	selfUsername           string
@@ -63,18 +63,18 @@ func newState(s *Secrets, envVars *environmentVariables) *state {
 	emoteCache := emotes.NewCache(envVars.Channels, envVars.SelfUserId)
 	go emoteCache.RoutinelyRefreshCache(envVars.EmoteCacheRefreshIntervalMinutes)
 
-	client := twitchIrc.NewClient(s.Username, s.OauthKey)
+	client := twitchirc.NewClient(s.Username, s.OauthKey)
 	go joinChannels(client, envVars.Channels)
 
-	pmq := personalMessageQueue.NewPersonalMessageQueue(envVars.PersonalMessageQueueCapacity)
+	pmq := personalmessagequeue.NewPersonalMessageQueue(envVars.PersonalMessageQueueCapacity)
 
-	cs := colorState.NewColorState(envVars.Colors)
+	cs := colorstate.NewColorState(envVars.Colors)
 	go cs.RoutinelyChangeColor(client, envVars.SelfUsername, pmq)
 
-	mqs := messageQueue.NewMessageQueues(envVars.Channels)
+	mqs := messagequeue.NewMessageQueues(envVars.Channels)
 	autoReplyTimes := map[string]time.Time{}
 
-	go renewUserToken.RoutinelyRefreshToken(time.Duration(envVars.TokenRefreshIntervalHours) * time.Hour)
+	go renewusertoken.RoutinelyRefreshToken(time.Duration(envVars.TokenRefreshIntervalHours) * time.Hour)
 
 	return &state{
 		emoteCache:             emoteCache,
@@ -121,20 +121,20 @@ func setup() {
 
 	state := newState(s, e)
 
-	state.client.OnReconnectMessage(func(m twitchIrc.ReconnectMessage) {
+	state.client.OnReconnectMessage(func(m twitchirc.ReconnectMessage) {
 		log.Println("received RECONNECT")
 	})
-	state.client.OnPingMessage(func(m twitchIrc.PingMessage) {
+	state.client.OnPingMessage(func(m twitchirc.PingMessage) {
 		log.WithFields(log.Fields{
 			"message": m.Message,
 		}).Info("received PING")
 	})
-	state.client.OnPongMessage(func(m twitchIrc.PongMessage) {
+	state.client.OnPongMessage(func(m twitchirc.PongMessage) {
 		log.WithFields(log.Fields{
 			"message": m.Message,
 		}).Info("received PONG")
 	})
-	state.client.OnNoticeMessage(func(m twitchIrc.NoticeMessage) {
+	state.client.OnNoticeMessage(func(m twitchirc.NoticeMessage) {
 		log.WithFields(log.Fields{
 			"channel": m.Channel,
 			"message": m.Message,
@@ -149,7 +149,7 @@ func setup() {
 		state.connected = true
 	})
 
-	state.client.OnPrivateMessage(func(m twitchIrc.PrivateMessage) {
+	state.client.OnPrivateMessage(func(m twitchirc.PrivateMessage) {
 		state.makePyramids(m)
 		state.autoReply(m)
 		state.onSelfMessage(m)
@@ -166,7 +166,7 @@ func main() {
 	setup()
 }
 
-func (state *state) onSelfMessage(m twitchIrc.PrivateMessage) {
+func (state *state) onSelfMessage(m twitchirc.PrivateMessage) {
 	mq := state.messageQueuesByChannel[m.Channel]
 	if strings.ToLower(m.User.Name) == state.selfUsername {
 		mq.Clear()
@@ -185,7 +185,7 @@ func (state *state) say(channel string, message string) {
 	state.personalMessageQueue.Push(time.Now())
 }
 
-func (state *state) spamBot(m twitchIrc.PrivateMessage) {
+func (state *state) spamBot(m twitchirc.PrivateMessage) {
 	mq := state.messageQueuesByChannel[m.Channel]
 	words := strings.SplitN(m.Message, " ", 6)
 	if len(words) == 6 {
@@ -206,7 +206,7 @@ func (state *state) spamBot(m twitchIrc.PrivateMessage) {
 	}
 }
 
-func (state *state) doesNotMentionOthers(m twitchIrc.PrivateMessage, usersInChannel []string) bool {
+func (state *state) doesNotMentionOthers(m twitchirc.PrivateMessage, usersInChannel []string) bool {
 	if len(usersInChannel) == 0 {
 		return false
 	}
@@ -222,7 +222,7 @@ func (state *state) doesNotMentionOthers(m twitchIrc.PrivateMessage, usersInChan
 	return true
 }
 
-func (state *state) autoReply(m twitchIrc.PrivateMessage) {
+func (state *state) autoReply(m twitchirc.PrivateMessage) {
 	cooldown := 30 * time.Second
 	lastReplyTime, lastReplyTimeFound := state.autoReplyTimes[m.User.Name]
 
@@ -240,7 +240,7 @@ func (state *state) autoReply(m twitchIrc.PrivateMessage) {
 	}
 }
 
-func (state *state) sendAutoReply(m twitchIrc.PrivateMessage) {
+func (state *state) sendAutoReply(m twitchirc.PrivateMessage) {
 	time.Sleep(time.Duration((rand.Float32()*10)+2) * time.Second)
 
 	usersInChannel, err := state.client.Userlist(m.Channel)
@@ -280,7 +280,7 @@ func (state *state) sendAutoReply(m twitchIrc.PrivateMessage) {
 	}
 }
 
-func (state *state) makePyramids(m twitchIrc.PrivateMessage) {
+func (state *state) makePyramids(m twitchirc.PrivateMessage) {
 	if m.User.Name == state.selfUsername && strings.HasPrefix(m.Message, "!pyramid") {
 		args := strings.Split(m.Message, " ")
 		if len(args) < 4 {
